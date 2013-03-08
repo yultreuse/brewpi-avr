@@ -3,8 +3,8 @@ brewpi-avr
 
 This is the code that runs on the BrewPi slave (AVR/Arduino)
 
-The newest branch at the moment is the shield branch.
-This branch works out of the box with the official BrewPi shields.
-This branch will soon become the master branch.
+This project uses Git Flow. The development branch is the newest branch. The master branch is the latest stable branch. This branch works out of the box with the official BrewPi shields. You can download the HEX files from the pre-compiled binaries folder to upload directly from the BrewPi web interface. Please right-click the 'RAW' button and use 'Save as..'.
 
-The master branch contains outdated code for DIY shields at the moment.
+The diy-shield branch is an outdated branch for the old DIY protoboard shield. It is not up to date to work with the Arduino Uno.
+
+
