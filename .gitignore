@@ -13,8 +13,3 @@
 
 # Exclude build directory
 Debug/
-
-# Ignore project files, because they change from machine to machine
-*.atsuo
-*.atsln
-*.cppproj
