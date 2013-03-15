@@ -22,7 +22,6 @@
 #define ROTARYENCODER_H_
 
 #include <inttypes.h>
-#include "ActivityHandler.h"
 
 #define ROTARY_THRESHOLD 20000ul
 
@@ -44,17 +43,7 @@ class RotaryEncoder
 	static void resetPushed(void);
 	static void setPushed(void);
 	
-	static void setActivityHandler(ActivityHandler* handler) {
-		activityHandler = handler;
-	}
-	
 	private:
-	
-	static void notifyActivity(ActivityType type) {
-		if (activityHandler)
-			activityHandler->notifyActivity(type);
-	}
-	
 	static int maximum;
 	static int minimum;
 	static int prevRead;
@@ -67,8 +56,6 @@ class RotaryEncoder
 	static volatile uint8_t pinBHistory;
 	static volatile unsigned long pinATime;
 	static volatile unsigned long pinBTime;	
-	
-	static ActivityHandler* activityHandler;
 };
 
 static RotaryEncoder rotaryEncoder;
