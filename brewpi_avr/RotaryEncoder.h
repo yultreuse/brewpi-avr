@@ -29,57 +29,48 @@
 class RotaryEncoder
 {
 	public:
-	void init(void);
-	void setRange(int start, int min, int max);
+	static void init(void);
+	static void setRange(int start, int min, int max);
 	
-	void pinAHandler(bool pinState);
-	void pinBHandler(bool pinState);
+	static void pinAHandler(bool pinState);
+	static void pinBHandler(bool pinState);
 	
 		
-	bool changed(void); // returns one if the value changed since the last call of changed.
-	int read(void);
+	static bool changed(void); // returns one if the value changed since the last call of changed.
+	static int read(void);
+	static int readHalfSteps(void);
 	
-	int readHalfSteps(void){
-		return halfSteps;
-	}
-
-	bool pushed(void){
-		return pushFlag;
-	}
-
-	void resetPushed(void){
-		pushFlag = false;
-	}	
+	static bool pushed(void);
+	static void resetPushed(void);
+	static void setPushed(void);
 	
-	void setPushed(void);
-	
-	void setActivityHandler(ActivityHandler* handler) {
+	static void setActivityHandler(ActivityHandler* handler) {
 		activityHandler = handler;
 	}
 	
 	private:
 	
-	void notifyActivity(ActivityType type) {
+	static void notifyActivity(ActivityType type) {
 		if (activityHandler)
 			activityHandler->notifyActivity(type);
 	}
 	
-	int maximum;
-	int minimum;
-	int prevRead;
-	volatile int halfSteps;
-	volatile bool pushFlag;
+	static int maximum;
+	static int minimum;
+	static int prevRead;
+	static volatile int halfSteps;
+	static volatile bool pushFlag;
 	
-	volatile uint8_t pinASignal;
-	volatile uint8_t pinBSignal;
-	volatile uint8_t pinAHistory;
-	volatile uint8_t pinBHistory;
-	volatile unsigned long pinATime;
-	volatile unsigned long pinBTime;	
+	static volatile uint8_t pinASignal;
+	static volatile uint8_t pinBSignal;
+	static volatile uint8_t pinAHistory;
+	static volatile uint8_t pinBHistory;
+	static volatile unsigned long pinATime;
+	static volatile unsigned long pinBTime;	
 	
-	ActivityHandler* activityHandler;
+	static ActivityHandler* activityHandler;
 };
 
-extern RotaryEncoder rotaryEncoder;
+static RotaryEncoder rotaryEncoder;
 
 #endif /* ROTARYENCODER_H_ */

@@ -23,9 +23,21 @@
 #include "pins.h"
 #include "util/atomic.h"
 #include <limits.h>
-#include "Ticks.h"
 
-RotaryEncoder rotaryEncoder;
+// declare static member variables:
+int RotaryEncoder::maximum;
+int RotaryEncoder::minimum;
+int RotaryEncoder::prevRead;
+ActivityHandler* RotaryEncoder::activityHandler = NULL;
+volatile int RotaryEncoder::halfSteps;
+volatile bool RotaryEncoder::pushFlag;
+volatile uint8_t RotaryEncoder::pinASignal;
+volatile uint8_t RotaryEncoder::pinBSignal;
+volatile uint8_t RotaryEncoder::pinAHistory;
+volatile uint8_t RotaryEncoder::pinBHistory;
+volatile unsigned long RotaryEncoder::pinATime;
+volatile unsigned long RotaryEncoder::pinBTime;
+
 
 #if rotarySwitchPin != 7
 	#error Review interrupt vectors when not using pin 7 for menu push
@@ -94,7 +106,7 @@ void RotaryEncoder::setPushed(void){
 }
 
 void RotaryEncoder::pinAHandler(bool pinState){
-	if(ticks.micros() - pinATime < ROTARY_THRESHOLD){
+	if(micros() - pinATime < ROTARY_THRESHOLD){
 		return;
 	}		
 	pinAHistory = pinASignal;
@@ -102,7 +114,7 @@ void RotaryEncoder::pinAHandler(bool pinState){
 	if ( pinAHistory==pinASignal ){
 		return; // not a transition
 	}
-	pinATime = ticks.micros();
+	pinATime = micros();
 	if ( pinASignal == pinBSignal ){
 		halfSteps++;
 	}
@@ -122,7 +134,7 @@ void RotaryEncoder::pinAHandler(bool pinState){
 }
 
 void RotaryEncoder::pinBHandler(bool pinState){
-	if (ticks.micros() - pinBTime < ROTARY_THRESHOLD ){
+	if ( micros() - pinBTime < ROTARY_THRESHOLD ){
 		return;
 	}
 	pinBHistory = pinBSignal;
@@ -130,7 +142,7 @@ void RotaryEncoder::pinBHandler(bool pinState){
 	if ( pinBHistory==pinBSignal ){
 		return; // not a transition
 	}
-	pinBTime = ticks.micros();
+	pinBTime = micros();
 }
 
 void RotaryEncoder::init(void){
@@ -216,4 +228,16 @@ int RotaryEncoder::read(void){
 		}
 	}
 	return 0;		
+}
+
+int RotaryEncoder::readHalfSteps(void){
+	return halfSteps;
+}
+
+bool RotaryEncoder::pushed(void){
+	return pushFlag;
+}
+
+void RotaryEncoder::resetPushed(void){
+	pushFlag = false;
 }
