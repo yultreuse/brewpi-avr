@@ -13,3 +13,8 @@
 
 # Exclude build directory
 Debug/
+
+# Project files
+*.atsuo
+*.cppproj
+*.atsln
