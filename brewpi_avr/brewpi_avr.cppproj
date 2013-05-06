@@ -20,21 +20,22 @@
     <OverrideVtor>false</OverrideVtor>
     <OverrideVtorValue />
     <eraseonlaunchrule>0</eraseonlaunchrule>
-    <AsfVersion>3.1.3</AsfVersion>
+    <AsfVersion>2.11.1</AsfVersion>
     <avrtool>
     </avrtool>
-    <avrtoolinterface>JTAG</avrtoolinterface>
+    <avrtoolinterface>
+    </avrtoolinterface>
     <com_atmel_avrdbg_tool_avrdragon>
       <ToolType>com.atmel.avrdbg.tool.avrdragon</ToolType>
       <ToolName>AVR Dragon</ToolName>
-      <ToolNumber>00A20002612C</ToolNumber>
+      <ToolNumber>00A20002077E</ToolNumber>
       <KeepTimersRunning>true</KeepTimersRunning>
       <OverrideVtor>false</OverrideVtor>
       <OverrideVtorValue>
       </OverrideVtorValue>
       <Channel>
         <host>127.0.0.1</host>
-        <port>5604</port>
+        <port>54406</port>
         <ssl>False</ssl>
       </Channel>
       <ToolOptions>
@@ -86,6 +87,7 @@
   <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
   <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
   <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
+  <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
   <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
   <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
   <avrgcc.compiler.optimization.level>Optimize (-O1)</avrgcc.compiler.optimization.level>
@@ -137,6 +139,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Buzzer.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="CascadedFilter.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="CascadedFilter.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="jsonKeys.h">
@@ -209,6 +217,15 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="TempSensor.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Ticks.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Ticks.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="version.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

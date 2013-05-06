@@ -24,6 +24,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include <util/delay.h>
+#include <util/atomic.h>
 
 void SpiLcd::init(uint8_t latchPin)
 {
@@ -40,6 +41,7 @@ void SpiLcd::init(uint8_t latchPin)
 		}
 		content[i][20]='\0'; // NULL terminate string
 	}
+	_backlightTime = 0;
 }
 
 void SpiLcd::begin(uint8_t cols, uint8_t lines) {
@@ -47,10 +49,7 @@ void SpiLcd::begin(uint8_t cols, uint8_t lines) {
 	_currline = 0;
 	_currpos = 0;
   
-	// Set all outputs of shift register to low, this turns the backlight ON.
-	_spiByte = 0x00;
-	spiOut();
-	
+	// Set all outputs of shift register to low, this turns the backlight ON.	
 	// The following initialization sequence should be compatible with: 
 	// - Newhaven OLED displays
 	// - Standard HD44780 or S6A0069 LCD displays
@@ -173,6 +172,31 @@ void SpiLcd::createChar(uint8_t location, uint8_t charmap[]) {
 	}
 }
 
+// This resets the backlight timer and updates the SPI output
+void SpiLcd::resetBacklightTimer(void){
+	_backlightTime = ticks.seconds();
+	updateBacklight();
+	spiOut();
+}
+
+void SpiLcd::updateBacklight(void){
+	bool backLightOutput = ticks.timeSince(_backlightTime) > BACKLIGHT_AUTO_OFF_PERIOD;
+	bitWrite(_spiByte, LCD_SHIFT_BACKLIGHT, backLightOutput); // 1=OFF, 0=ON
+}
+
+// Puts the content of one LCD line into the provided buffer.
+void SpiLcd::getLine(uint8_t lineNumber, char * buffer){
+	for(uint8_t i =0;i<20;i++){
+		if(content[lineNumber][i] == 0b11011111){
+			buffer[i] = 0xB0; // correct degree sign
+		}
+		else{
+			buffer[i] = content[lineNumber][i]; // copy to string buffer
+		}
+	}
+	buffer[20] = '\0'; // NULL terminate string
+}
+
 /*********** mid level commands, for sending data/cmds */
 
 inline void SpiLcd::command(uint8_t value) {
@@ -194,7 +218,6 @@ void SpiLcd::initSpi(void){
 	pinMode(MOSI, OUTPUT);
 	pinMode(SCK, OUTPUT);
 	pinMode(SS, OUTPUT);
-
 	// The most significant bit should be sent out by the SPI port first.
 	// equals SPI.setBitOrder(MSBFIRST);
 	SPCR &= ~_BV(DORD);
@@ -229,15 +252,17 @@ void SpiLcd::spiOut(void){
 
 // write either command or data
 void SpiLcd::send(uint8_t value, uint8_t mode) {
-	if(mode){
-		bitSet(_spiByte, LCD_SHIFT_RS);
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){ // prevent interrupts during command
+		if(mode){
+			bitSet(_spiByte, LCD_SHIFT_RS);
+		}
+		else{
+			bitClear(_spiByte, LCD_SHIFT_RS);
+		}
+		spiOut();
+		write4bits(value>>4);
+		write4bits(value);	
 	}
-	else{
-		bitClear(_spiByte, LCD_SHIFT_RS);
-	}
-	spiOut();
-	write4bits(value>>4);
-	write4bits(value);
 }
 
 void SpiLcd::pulseEnable(void) {
@@ -248,8 +273,7 @@ void SpiLcd::pulseEnable(void) {
 	spiOut();
 }
 
-void SpiLcd::write4bits(uint8_t value) {
-		
+void SpiLcd::write4bits(uint8_t value) {	
 	_spiByte = (_spiByte & ~LCD_SHIFT_DATA_MASK) | (value << 4);
 	spiOut();
 	pulseEnable();
@@ -258,16 +282,4 @@ void SpiLcd::write4bits(uint8_t value) {
 void SpiLcd::waitBusy(void) {
 	// we cannot read the busy pin, so just wait 1 ms
 	_delay_ms(1);
-}
-
-void SpiLcd::getLine(uint8_t lineNumber, char * buffer){
-	for(uint8_t i =0;i<20;i++){
-		if(content[lineNumber][i] == 0b11011111){
-			buffer[i] = 0xB0; // correct degree sign
-		}
-		else{
-			buffer[i] = content[lineNumber][i]; // copy to string buffer
-		}
-	}
-	buffer[20] = '\0'; // NULL terminate string
 }

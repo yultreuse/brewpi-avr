@@ -23,20 +23,10 @@
 #include "pins.h"
 #include "util/atomic.h"
 #include <limits.h>
+#include "Ticks.h"
+#include "Display.h"
 
-// declare static member variables:
-int RotaryEncoder::maximum;
-int RotaryEncoder::minimum;
-int RotaryEncoder::prevRead;
-volatile int RotaryEncoder::halfSteps;
-volatile bool RotaryEncoder::pushFlag;
-volatile uint8_t RotaryEncoder::pinASignal;
-volatile uint8_t RotaryEncoder::pinBSignal;
-volatile uint8_t RotaryEncoder::pinAHistory;
-volatile uint8_t RotaryEncoder::pinBHistory;
-volatile unsigned long RotaryEncoder::pinATime;
-volatile unsigned long RotaryEncoder::pinBTime;
-
+RotaryEncoder rotaryEncoder;
 
 #if rotarySwitchPin != 7
 	#error Review interrupt vectors when not using pin 7 for menu push
@@ -75,7 +65,7 @@ ISR(PCINT0_vect){
 ISR(PCINT2_vect){
 	if(!bitRead(PIND,7)){
 		// high to low transition
-		rotaryEncoder.setPushed();	
+		rotaryEncoder.setPushed();
 	}
 }
 
@@ -93,7 +83,7 @@ ISR(PCINT0_vect){
 		rotaryEncoder.pinBHandler(currPinB);
 	}
 	prevPinA = currPinA;
-	prevPinB = currPinB;
+	prevPinB = currPinB;	
 }
 
 
@@ -101,10 +91,11 @@ ISR(PCINT0_vect){
 
 void RotaryEncoder::setPushed(void){
 	pushFlag = true;
+	display.lcd.resetBacklightTimer();
 }
 
 void RotaryEncoder::pinAHandler(bool pinState){
-	if(micros() - pinATime < ROTARY_THRESHOLD){
+	if(ticks.micros() - pinATime < ROTARY_THRESHOLD){
 		return;
 	}		
 	pinAHistory = pinASignal;
@@ -112,7 +103,7 @@ void RotaryEncoder::pinAHandler(bool pinState){
 	if ( pinAHistory==pinASignal ){
 		return; // not a transition
 	}
-	pinATime = micros();
+	pinATime = ticks.micros();
 	if ( pinASignal == pinBSignal ){
 		halfSteps++;
 	}
@@ -125,11 +116,12 @@ void RotaryEncoder::pinAHandler(bool pinState){
 	}
 	if(halfSteps <= (minimum-2)){
 		halfSteps = maximum;
-	}		
+	}
+	display.lcd.resetBacklightTimer();
 }
 
 void RotaryEncoder::pinBHandler(bool pinState){
-	if ( micros() - pinBTime < ROTARY_THRESHOLD ){
+	if (ticks.micros() - pinBTime < ROTARY_THRESHOLD ){
 		return;
 	}
 	pinBHistory = pinBSignal;
@@ -137,7 +129,7 @@ void RotaryEncoder::pinBHandler(bool pinState){
 	if ( pinBHistory==pinBSignal ){
 		return; // not a transition
 	}
-	pinBTime = micros();
+	pinBTime = ticks.micros();
 }
 
 void RotaryEncoder::init(void){
@@ -223,16 +215,4 @@ int RotaryEncoder::read(void){
 		}
 	}
 	return 0;		
-}
-
-int RotaryEncoder::readHalfSteps(void){
-	return halfSteps;
-}
-
-bool RotaryEncoder::pushed(void){
-	return pushFlag;
-}
-
-void RotaryEncoder::resetPushed(void){
-	pushFlag = false;
 }

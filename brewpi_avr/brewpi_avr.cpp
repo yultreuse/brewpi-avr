@@ -26,7 +26,7 @@
  * That is all that is needed! No hassle with makefiles and compiling libraries.
  */
 #include <Arduino.h>
-
+#include "Ticks.h"
 #include "Display.h"
 #include "TempControl.h"
 #include "PiLink.h"
@@ -35,15 +35,16 @@
 #include "RotaryEncoder.h"
 #include "Buzzer.h"
 
-// global class opbjects static and defined in class cpp and h files
+// global class objects static and defined in class cpp and h files
 
 void setup(void);
 void loop (void);
 
+
 void setup()
 {
 	
-	Serial.begin(57600);
+	piLink.init();
 	
 	// Signals are inverted on the shield, so set to high
 	digitalWrite(coolingPin, HIGH);
@@ -63,7 +64,7 @@ void setup()
 	tempControl.updatePID();
 	tempControl.updateState();
 	
-	delay(2000); // give LCD time to power up
+	wait.millis(2000); // give LCD time to power up
 	
 	display.init();
 	display.printStationaryText();
@@ -96,25 +97,24 @@ void main(void)
 
 void loop(void)
 {
-	static unsigned long lastUpdate;
-	if(millis() - lastUpdate > 1000){ //update settings every second
-		lastUpdate=millis();
+	static unsigned long lastUpdate = 0;
+	if(ticks.millis() - lastUpdate > 1000){ //update settings every second
+		lastUpdate=ticks.millis();
 		
 		tempControl.updateTemperatures();		
 		tempControl.detectPeaks();
 		tempControl.updatePID();
 		tempControl.updateState();
 		tempControl.updateOutputs();
-		
+		if(rotaryEncoder.pushed()){
+			rotaryEncoder.resetPushed();
+			menu.pickSettingToChange();	
+		}
 		display.printState();
 		display.printAllTemperatures();
 		display.printMode();
-	}
-	if(rotaryEncoder.pushed()){
-		rotaryEncoder.resetPushed();
-		menu.pickSettingToChange();		
-	}
-	
+		display.lcd.updateBacklight();
+	}	
 	//listen for incoming serial connections while waiting top update
 	piLink.receive();
 }
