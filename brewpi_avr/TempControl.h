@@ -29,69 +29,6 @@
 #include "Sensor.h"
 #include "EepromManager.h"
 
-// Set minimum off time to prevent short cycling the compressor in seconds
-#define MIN_COOL_OFF_TIME 300u
-// Use a minimum off time for the heater as well, so it heats in cycles, not lots of short bursts
-#define MIN_HEAT_OFF_TIME 300u
-// Minimum on time for the cooler.
-#define MIN_COOL_ON_TIME 300u
-// Minimum on time for the heater.
-#define MIN_HEAT_ON_TIME 300u
-// Use a large minimum off time in fridge constant mode. No need for very fast cycling.
-#define MIN_COOL_OFF_TIME_FRIDGE_CONSTANT 900u
-// Set a minimum off time between switching between heating and cooling
-#define MIN_SWITCH_TIME 600u
-// Time allowed for peak detection
-#define COOL_PEAK_DETECT_TIME 1800u
-#define HEAT_PEAK_DETECT_TIME 900u
-
-// These two structs are stored in and loaded from EEPROM
-struct ControlSettings{
-	char mode;
-	fixed7_9 beerSetting;
-	fixed7_9 fridgeSetting;
-	fixed7_9 heatEstimator; // updated automatically by self learning algorithm
-	fixed7_9 coolEstimator; // updated automatically by self learning algorithm
-};
-
-struct ControlVariables{
-	fixed7_9 beerDiff;
-	fixed23_9 diffIntegral; // also uses 9 fraction bits, but more integer bits to prevent overflow
-	fixed7_9 beerSlope;
-	fixed23_9 p;
-	fixed23_9 i;
-	fixed23_9 d;
-	fixed7_9 estimatedPeak;
-	fixed7_9 negPeakEstimate; // last estimate
-	fixed7_9 posPeakEstimate;
-	fixed7_9 negPeak; // last detected peak
-	fixed7_9 posPeak;
-};
-
-struct ControlConstants{
-	char tempFormat;
-	fixed7_9 tempSettingMin;
-	fixed7_9 tempSettingMax;	
-	fixed7_9 Kp;
-	fixed7_9 Ki;
-	fixed7_9 Kd;
-	fixed7_9 iMaxError;
-	fixed7_9 idleRangeHigh;
-	fixed7_9 idleRangeLow;
-	fixed7_9 heatingTargetUpper;
-	fixed7_9 heatingTargetLower;
-	fixed7_9 coolingTargetUpper;
-	fixed7_9 coolingTargetLower;
-	uint16_t maxHeatTimeForEstimate; // max time for heat estimate in seconds
-	uint16_t maxCoolTimeForEstimate; // max time for heat estimate in seconds
-	// for the filter coefficients the b value is stored. a is calculated from b.
-	uint8_t fridgeFastFilter;	// for display, logging and on-off control
-	uint8_t fridgeSlowFilter;	// for peak detection
-	uint8_t fridgeSlopeFilter;	// not used in current control algorithm
-	uint8_t beerFastFilter;	// for display and logging
-	uint8_t beerSlowFilter;	// for on/off control algorithm
-	uint8_t beerSlopeFilter;	// for PID calculation
-};
 
 #define EEPROM_TC_SETTINGS_BASE_ADDRESS 0
 #define EEPROM_CONTROL_SETTINGS_ADDRESS (EEPROM_TC_SETTINGS_BASE_ADDRESS+sizeof(uint8_t))
@@ -103,15 +40,6 @@ struct ControlConstants{
 #define MODE_OFF 'o'
 #define MODE_TEST 't'
 
-enum states{
-	IDLE,
-	STARTUP,
-	STATE_OFF,
-	DOOR_OPEN,
-	HEATING,
-	COOLING,
-	NUM_STATES
-};
 
 #define TC_STATE_MASK 0x7;	// 3 bits
 
@@ -144,9 +72,7 @@ class TempControl{
 	~TempControl(){};
 	
 	TEMP_CONTROL_METHOD void init(void);
-	TEMP_CONTROL_METHOD void reset(void);
-	
-	TEMP_CONTROL_METHOD void updateTemperatures(void);
+		
 	TEMP_CONTROL_METHOD void updatePID(void);
 	TEMP_CONTROL_METHOD void updateState(void);
 	TEMP_CONTROL_METHOD void updateOutputs(void);
@@ -192,11 +118,8 @@ class TempControl{
 	}
 		
 	private:
-	TEMP_CONTROL_METHOD void increaseEstimator(fixed7_9 * estimator, fixed7_9 error);
-	TEMP_CONTROL_METHOD void decreaseEstimator(fixed7_9 * estimator, fixed7_9 error);
-	TEMP_CONTROL_METHOD void constantsChanged();
 	
-	TEMP_CONTROL_METHOD void updateEstimatedPeak(uint16_t estimate, fixed7_9 estimator, uint16_t sinceIdle);
+	TEMP_CONTROL_METHOD void constantsChanged();
 
 	public:
 	TEMP_CONTROL_FIELD TempSensor* beerSensor;
@@ -211,20 +134,6 @@ class TempControl{
 	TEMP_CONTROL_FIELD ControlConstants cc;
 	TEMP_CONTROL_FIELD ControlSettings cs;
 	TEMP_CONTROL_FIELD ControlVariables cv;
-		
-	private:
-	// keep track of beer setting stored in EEPROM
-	TEMP_CONTROL_FIELD fixed7_9 storedBeerSetting;
-
-	// Timers
-	TEMP_CONTROL_FIELD unsigned int lastIdleTime;
-	TEMP_CONTROL_FIELD unsigned int lastHeatTime;
-	TEMP_CONTROL_FIELD unsigned int lastCoolTime;
-	
-	// State variables
-	TEMP_CONTROL_FIELD uint8_t state;
-	TEMP_CONTROL_FIELD bool doPosPeakDetect;
-	TEMP_CONTROL_FIELD bool doNegPeakDetect;
 	
 	friend class TempControlState;
 };

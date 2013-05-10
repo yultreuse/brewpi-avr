@@ -53,7 +53,12 @@ fixed23_9 stringToFixedPoint(const char * numberString);
 int fixedToTenths(fixed23_9 temperature);
 fixed7_9 tenthsToFixed(int temperature);
 
+fixed7_9 multiplyFixeda7_9b23_9(fixed7_9 a, fixed23_9 b);
+
+fixed7_9 multiplyFixed7_9(fixed7_9 a, fixed7_9 b);
 
 #define OPTIMIZE_TEMPERATURE_FORMATS 1 && OPTIMIZE_GLOBAL
+
+
 
 #endif /* TEMPERATUREFORMATS_H_ */

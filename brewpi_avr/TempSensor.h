@@ -84,6 +84,7 @@ class TempSensor {
 	bool isConnected() { return _sensor->isConnected(); }
 	
 	void update();
+	void updateAndReInit();
 	
 	fixed7_9 readFastFiltered(void);
 

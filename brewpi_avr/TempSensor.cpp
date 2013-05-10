@@ -62,6 +62,13 @@ void TempSensor::update()
 		
 }
 
+void TempSensor::updateAndReInit(){
+	update();
+	if(!isConnected()){
+		init(); // try to re-initialize the sensor
+	}	
+}
+
 /*
 fixed7_9 TempSensor::read(void){
 	return fastFilter.readInput(); //return most recent unfiltered value

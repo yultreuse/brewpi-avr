@@ -15,7 +15,10 @@
 #endif
 
 #if BREWPI_ESTIMATOR_MESSAGES
-	#define ESTIMATOR_MSG(msg, ...) piLink.debugMessage(PSTR(msg), __VA_ARGS__)
+	#define ESTIMATOR_MSG(msg, ...){
+		piLink.debugMessage(PSTR(msg), __VA_ARGS__)
+		piLink.debugMessage("in Chamber %d.\n", chamberId)
+	}
 #else
 	#define ESTIMATOR_MSG(msg,...)  {}
 #endif

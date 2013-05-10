@@ -201,3 +201,13 @@ fixed7_9 tenthsToFixed(int temperature){
 		return ((fixed23_9) temperature * 512 + 5) / 10; // return rounded result in fixed point	
 	}
 }
+
+fixed7_9 multiplyFixeda7_9b23_9(fixed7_9 a, fixed23_9 b)
+{
+	return ((fixed23_9) a * b)>>9;
+}
+
+fixed7_9 multiplyFixed7_9(fixed7_9 a, fixed7_9 b)
+{
+	return ((fixed23_9) a * (fixed23_9) b)>>9;
+}

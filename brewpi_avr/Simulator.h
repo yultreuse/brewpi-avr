@@ -4,7 +4,9 @@
  * Created: 02/04/2013 18:01:55
  *  Author: mat
  */ 
-#pragma once
+
+#ifndef SIMULATOR_H
+#define SIMULATOR_H
 
 #include "brewpi_avr.h"
 #include "ExternalTempSensor.h"
@@ -378,3 +380,4 @@ struct FermentPhases
 extern void setRunFactor(fixed7_9 factor);
 extern Simulator simulator;
 
+#endif
