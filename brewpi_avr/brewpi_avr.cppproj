@@ -214,6 +214,9 @@
     <Compile Include="Buzzer.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Carboy.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="CascadedFilter.cpp">
       <SubType>compile</SubType>
     </Compile>
